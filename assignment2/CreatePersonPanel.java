@@ -164,27 +164,38 @@ public class CreatePersonPanel extends JPanel {
             String lastName = lastNameField.getText().trim();
             String ssn = ssnField.getText().trim();
             String email = emailField.getText().trim();
-            int age = Integer.parseInt(ageField.getText().trim());
-            double height = Double.parseDouble(heightField.getText().trim());
-            double weight = Double.parseDouble(weightField.getText().trim());
-            char gender = genderField.getText().trim().charAt(0);
+            String ageText = ageField.getText().trim();
+            String heightText = heightField.getText().trim();
+            String weightText = weightField.getText().trim();
+            String genderText = genderField.getText().trim();
 
-            String homeStreet = homeStreetField.getText().trim();
-            String homeUnit = homeUnitField.getText().trim();
-            String homeCity = homeCityField.getText().trim();
-            String homeState = homeStateField.getText().trim();
-            String homeZip = homeZipField.getText().trim();
-            long homePhone = Long.parseLong(homePhoneField.getText().trim());
+            if (firstName.isEmpty() || lastName.isEmpty() || ssn.isEmpty() || email.isEmpty() ||
+                    ageText.isEmpty() || heightText.isEmpty() || weightText.isEmpty() || genderText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill in all fields.");
+                return;
+            }
 
-            String workStreet = workStreetField.getText().trim();
-            String workUnit = workUnitField.getText().trim();
-            String workCity = workCityField.getText().trim();
-            String workState = workStateField.getText().trim();
-            String workZip = workZipField.getText().trim();
-            long workPhone = Long.parseLong(workPhoneField.getText().trim());
+            int age = Integer.parseInt(ageText);
+            double height = Double.parseDouble(heightText);
+            double weight = Double.parseDouble(weightText);
+            char gender = genderText.charAt(0);
 
-            Address homeAddress = new Address(homeStreet, homeUnit, homeCity, homeState, homeZip, homePhone);
-            Address workAddress = new Address(workStreet, workUnit, workCity, workState, workZip, workPhone);
+            if (age < 0 || height < 0 || weight < 0) {
+                JOptionPane.showMessageDialog(this, "Age, height, and weight must be positive values.");
+                return;
+            }
+
+            if (gender != 'M' && gender != 'F') {
+                JOptionPane.showMessageDialog(this, "Gender must be 'M' or 'F'.");
+                return;
+            }
+
+            Address homeAddress = new Address(homeStreetField.getText().trim(), homeUnitField.getText().trim(),
+                    homeCityField.getText().trim(), homeStateField.getText().trim(), homeZipField.getText().trim(),
+                    Long.parseLong(homePhoneField.getText().trim()));
+            Address workAddress = new Address(workStreetField.getText().trim(), workUnitField.getText().trim(),
+                    workCityField.getText().trim(), workStateField.getText().trim(), workZipField.getText().trim(),
+                    Long.parseLong(workPhoneField.getText().trim()));
 
             Person newPerson = new Person(firstName, lastName, ssn, email, age, height, weight, gender, homeAddress, workAddress);
             personDirectory.addPerson(newPerson);
@@ -192,9 +203,10 @@ public class CreatePersonPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Person created successfully.");
             clearFields();
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Please enter valid data for age, height, weight, and phone numbers.");
+            JOptionPane.showMessageDialog(this, "Please enter valid numerical values for age, height, weight, and phone numbers.");
         }
     }
+
 
     private void clearFields() {
         firstNameField.setText("");
