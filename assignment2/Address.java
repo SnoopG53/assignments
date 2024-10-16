@@ -1,3 +1,5 @@
+package assignment2;
+
 public class Address {
     private String streetAddress;
     private String unitNumber;

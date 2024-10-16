@@ -1,3 +1,5 @@
+package assignment2;
+
 public class Person {
     private String firstName;
     private String lastName;
