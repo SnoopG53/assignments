@@ -52,27 +52,37 @@ public class App {
 
 
     private void processUserInput(String userInput) {
-        if (!userInput.trim().isEmpty()) {
+        try {
+            if (userInput == null || userInput.trim().isEmpty()) {
+                throw new EmptyInputException("Input cannot be empty!");
+            }
+
             addMessageBubble("User:", userInput, true);
+
             JsonObject userMessage = new JsonObject();
             userMessage.addProperty("role", "user");
             userMessage.addProperty("content", userInput);
             messageHistory.add(userMessage);
-            try {
-                String response = getChatResponse();
-                addMessageBubble("Response:", response, false);
-                JsonObject assistantMessage = new JsonObject();
-                assistantMessage.addProperty("role", "assistant");
-                assistantMessage.addProperty("content", response);
-                messageHistory.add(assistantMessage);
-                chatPanel.revalidate();
-                SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum()));
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-                addMessageBubble("Response:", "Error: Unable to get response from OpenAI.", false);
-            }
+
+            String response = getChatResponse();
+            addMessageBubble("Response:", response, false);
+
+            JsonObject assistantMessage = new JsonObject();
+            assistantMessage.addProperty("role", "assistant");
+            assistantMessage.addProperty("content", response);
+            messageHistory.add(assistantMessage);
+
+            chatPanel.revalidate();
+            SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum()));
+        } catch (EmptyInputException e) {
+            addMessageBubble("Error:", e.getMessage(), false); // 显示错误信息到聊天界面
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            addMessageBubble("Response:", "Error: Unable to get response from OpenAI.", false);
         }
     }
+
+
 
     private String getChatResponse() throws IOException, InterruptedException {
         OkHttpClient client = new OkHttpClient();
@@ -122,7 +132,11 @@ public class App {
         chatPanel.add(messageBubble);
         chatPanel.revalidate();
     }
-
+    class EmptyInputException extends Exception {
+        public EmptyInputException(String message) {
+            super(message);
+        }
+    }
     public static void main(String[] args) {
         new App();
     }
