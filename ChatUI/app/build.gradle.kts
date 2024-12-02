@@ -12,6 +12,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("com.google.code.gson:gson:2.8.8")
     implementation("org.jetbrains:annotations:24.0.1")
+    implementation ("org.postgresql:postgresql:42.7.4")
 }
 
 java {

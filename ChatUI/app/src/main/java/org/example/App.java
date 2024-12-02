@@ -1,4 +1,5 @@
 package org.example;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -7,6 +8,8 @@ import okhttp3.*;
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.sql.*;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,17 +19,22 @@ public class App {
     private JTextField inputField;
     private JScrollPane scrollPane;
     private List<JsonObject> messageHistory;
-    private final String apiKey = "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";
+    private final String apiKey = System.getenv("apiKey");
+    private static final String URL = System.getenv("URL");
+    private static final String USER = System.getenv("USER");
+    private static final String PASSWORD = System.getenv("PASSWORD");
+
 
     public App() {
         messageHistory = new ArrayList<>();
         setupUI();
+        loadChatHistory();
     }
 
     private void setupUI() {
         frame = new JFrame("Chat UI");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 800); // 增加窗口尺寸
+        frame.setSize(600, 800);
         frame.setLayout(new BorderLayout());
 
         chatPanel = new JPanel();
@@ -50,7 +58,6 @@ public class App {
         frame.setVisible(true);
     }
 
-
     private void processUserInput(String userInput) {
         try {
             if (userInput == null || userInput.trim().isEmpty()) {
@@ -63,6 +70,7 @@ public class App {
             userMessage.addProperty("role", "user");
             userMessage.addProperty("content", userInput);
             messageHistory.add(userMessage);
+            saveMessageToDatabase("user", userInput);
 
             String response = getChatResponse();
             addMessageBubble("Response:", response, false);
@@ -71,18 +79,52 @@ public class App {
             assistantMessage.addProperty("role", "assistant");
             assistantMessage.addProperty("content", response);
             messageHistory.add(assistantMessage);
+            saveMessageToDatabase("assistant", response);
 
             chatPanel.revalidate();
             SwingUtilities.invokeLater(() -> scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum()));
         } catch (EmptyInputException e) {
-            addMessageBubble("Error:", e.getMessage(), false); // 显示错误信息到聊天界面
+            addMessageBubble("Error:", e.getMessage(), false);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             addMessageBubble("Response:", "Error: Unable to get response from OpenAI.", false);
         }
     }
 
+    private void loadChatHistory() {
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String query = "SELECT role, content FROM chat_history ORDER BY id ASC";
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
 
+            while (resultSet.next()) {
+                String role = resultSet.getString("role");
+                String content = resultSet.getString("content");
+                addMessageBubble(role.equals("user") ? "User:" : "Response:", content, role.equals("user"));
+
+                JsonObject message = new JsonObject();
+                message.addProperty("role", role);
+                message.addProperty("content", content);
+                messageHistory.add(message);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            addMessageBubble("Error:", "Unable to load chat history.", false);
+        }
+    }
+
+    private void saveMessageToDatabase(String role, String content) {
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+            String query = "INSERT INTO chat_history (role, content) VALUES (?, ?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, role);
+            preparedStatement.setString(2, content);
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            addMessageBubble("Error:", "Unable to save message to database.", false);
+        }
+    }
 
     private String getChatResponse() throws IOException, InterruptedException {
         OkHttpClient client = new OkHttpClient();
@@ -132,11 +174,13 @@ public class App {
         chatPanel.add(messageBubble);
         chatPanel.revalidate();
     }
+
     class EmptyInputException extends Exception {
         public EmptyInputException(String message) {
             super(message);
         }
     }
+
     public static void main(String[] args) {
         new App();
     }
