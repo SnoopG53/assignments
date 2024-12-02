@@ -24,6 +24,11 @@ dependencies {
     implementation 'com.google.http-client:google-http-client-jackson2:1.41.6'
     implementation 'com.google.guava:guava:32.1.2-jre'
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    implementation 'org.postgresql:postgresql:42.2.24'
+    implementation 'org.jooq:jooq:3.19.15'
+    implementation 'org.jooq:jooq-meta:3.19.15'
+    implementation 'org.jooq:jooq-codegen:3.19.15'
+    implementation 'org.postgresql:postgresql:42.7.4'
 }
 
 java {
