@@ -24,14 +24,11 @@ import java.util.stream.Collectors;
 @SpringBootApplication
 @RestController
 public class MyApplication {
+    private final String API_KEY = System.getenv("YOUTUBEAPI");
 
-    private static final String API_KEY = System.getenv("YOUTUBE_API_KEY");
-
-    // Database connection details
-    private static final String URL = "jdbc:postgresql://aws-0-us-west-1.pooler.supabase.com:6543/postgres?prepareThreshold=0";
-    private static final String USER = "postgres.dyzwhxgtokbzefavnkbj";
-    private static final String PASSWORD = "T8eHba3b5qBBDZfV";
-
+    private static final String URL = System.getenv("URL");
+    private static final String USER = System.getenv("USER");
+    private static final String PASSWORD = System.getenv("PASSWORD");
     private final DSLContext dsl;
 
     public MyApplication() {
